@@ -197,3 +197,19 @@ body {
 .start-menu-list li:last-child {
   margin-bottom: 0;
 }
+
+.highlight-row {
+  background-color: navy;
+  color: white;
+  font-weight: bold;
+  border: 2px inset #000080;
+}
+
+.highlight-row td {
+  background-color: navy;
+  color: white;
+  font-weight: bold;
+  border: 1px solid #000080;
+  box-shadow: inset 1px 1px #ffffff55;
+}
+

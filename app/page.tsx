@@ -165,12 +165,15 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                  {schedule.map(({ date, responsible }, idx) => (
-                    <tr key={idx}>
-                      <td>{date}</td>
-                      <td>{responsible}</td>
-                    </tr>
-                  ))}
+                  {schedule.map(({ date, responsible }, idx) => {
+                    const isToday = new Date().toLocaleDateString('pt-BR') === date;
+                    return (
+                      <tr key={idx} className={isToday ? 'highlight-row' : ''}>
+                        <td>{date}</td>
+                        <td>{responsible}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
