@@ -40,6 +40,9 @@ export default function Home() {
   const [showWindow, setShowWindow] = useState(false);
   const [showStartMenu, setShowStartMenu] = useState(false);
   const [time, setTime] = useState(new Date());
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   const schedule = generateSchedule(names);
 
@@ -84,6 +87,14 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (isLoggedIn) {
+      const audio = new Audio('/win98-startup.mp3');
+      audio.volume = 0.1;
+      audio.play();
+    }
+  }, [isLoggedIn]);
+
   const saveNames = () => {
     const filtered = inputNames.filter((name) => name.trim() !== '');
     setNames([...filtered]);
@@ -105,115 +116,169 @@ export default function Home() {
     }
   };
 
+  const today = new Date().toLocaleDateString('pt-BR');
+
   return (
     <div className="desktop">
-      <div className="desktop-icons">
-        <div className="icon" onClick={() => setShowWindow(true)}>
-          <img src="https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-3.png" alt="Deploys" />
-          <span>Deploys</span>
-        </div>
-      </div>
-
-      <div className="taskbar">
-        <div className="start-button" onClick={() => setShowStartMenu((v) => !v)}>
-          <img src="https://win98icons.alexmeub.com/icons/png/windows-0.png" alt="Start" />
-          <span className="start-label">Iniciar</span>
-        </div>
-        <div className="taskbar-program">Agenda de Deploys</div>
-        <div className="taskbar-clock">
-          {time.toLocaleDateString('pt-BR')} {time.toLocaleTimeString('pt-BR')}
-        </div>
-        {showStartMenu && (
-          <div className="start-menu">
-            <div className="start-menu-header">Windows 98</div>
-            <ul className="start-menu-list">
-              <li onClick={() => alert('Windows Update')}>Windows Update</li>
-              <li onClick={() => alert('Abrindo programas...')}>Programs</li>
-              <li onClick={() => alert('Favoritos abertos')}>Favorites</li>
-              <li onClick={() => alert('Abrindo documentos...')}>Documents</li>
-              <li onClick={() => alert('Abrindo configurações')}>Settings</li>
-              <li onClick={() => alert('Busca iniciada')}>Find</li>
-              <li onClick={() => alert('Ajuda')}>Help</li>
-              <li onClick={() => alert('Executando...')}>Run...</li>
-              <li onClick={() => alert('Sessão encerrada')}>Log Off</li>
-              <li onClick={() => alert('Desligando...')}>Shut Down...</li>
-            </ul>
-          </div>
-        )}
-      </div>
-
-      {showWindow && (
-        <div
-          ref={windowRef}
-          className="window"
-          style={{ width: 600, position: 'absolute', top: position.y, left: position.x, cursor: dragging ? 'url(https://cur.cursors-4u.net/cursors/cur-2/cur116.cur), auto' : 'default' }}
-        >
-          <div className="title-bar" onMouseDown={handleMouseDown} style={{ cursor: 'url(https://cur.cursors-4u.net/cursors/cur-2/cur116.cur), auto' }}>
-            <div className="title-bar-text">Deploy Schedule - Windows 98</div>
-            <div className="title-bar-controls">
-              <button aria-label="Close" onClick={() => setShowWindow(false)}></button>
+      {!isLoggedIn ? (
+        <div className="desktop login-screen" style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          background: 'url("/win98-bg.jpg") no-repeat center center fixed',
+          backgroundSize: 'cover',
+          animation: 'fadeIn 1.5s ease-out',
+        }}>
+          <div className="window login-window" style={{
+            minWidth: 300,
+            maxWidth: '90%',
+            margin: '0 auto',
+            textAlign: 'center',
+          }}>
+            <div className="title-bar">
+              <div className="title-bar-text">Windows 98 Login</div>
             </div>
-          </div>
-          <div className="window-body">
-            <p>Agenda de Deploys (Segundas e Quintas):</p>
-            <div className="table-container">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Data</th>
-                    <th>Responsável</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {schedule.map(({ date, responsible }, idx) => {
-                    const isToday = new Date().toLocaleDateString('pt-BR') === date;
-                    return (
-                      <tr key={idx} className={isToday ? 'highlight-row' : ''}>
-                        <td>{date}</td>
-                        <td>{responsible}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {editing ? (
+            <div className="window-body">
+              <p>Usuário:</p>
+              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
+              <p>Senha:</p>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
               <div style={{ marginTop: 10 }}>
-                <p>Editar nomes:</p>
-                {inputNames.map((name, idx) => (
-                  <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 5 }}>
-                    <input
-                      value={name}
-                      onChange={(e) => {
-                        const copy = [...inputNames];
-                        copy[idx] = e.target.value;
-                        setInputNames(copy);
-                      }}
-                      style={{ flex: 1 }}
-                    />
-                    <button onClick={() => removeName(idx)}>Excluir</button>
-                  </div>
-                ))}
-                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                  <input
-                    placeholder="Novo nome"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    style={{ flex: 1 }}
-                  />
-                  <button onClick={addName}>Adicionar</button>
-                </div>
-                <button className="button" onClick={saveNames}>Salvar</button>
+                <button onClick={() => setIsLoggedIn(true)}>Entrar</button>
               </div>
-            ) : (
-              <button className="button" onClick={() => {
-                setInputNames(names);
-                setEditing(true);
-              }}>Editar Nomes</button>
+            </div>
+          </div>
+          <style jsx>{`
+            @keyframes fadeIn {
+              0% { opacity: 0; transform: scale(0.9); }
+              100% { opacity: 1; transform: scale(1); }
+            }
+          `}</style>
+        </div>
+      ) : (
+        <>
+          <div className="desktop-icons">
+            <div className="icon" onClick={() => setShowWindow(true)}>
+              <img src="https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-3.png" alt="Deploys" />
+              <span>Deploys</span>
+            </div>
+          </div>
+
+          <div className="taskbar">
+            <div className="start-button" onClick={() => setShowStartMenu((v) => !v)}>
+              <img src="https://win98icons.alexmeub.com/icons/png/windows-0.png" alt="Start" />
+              <span className="start-label">Iniciar</span>
+            </div>
+            <div className="taskbar-program">Agenda de Deploys</div>
+            <div className="taskbar-clock">
+              {time.toLocaleDateString('pt-BR')} {time.toLocaleTimeString('pt-BR')}
+            </div>
+            {showStartMenu && (
+              <div className="start-menu">
+                <div className="start-menu-header">Windows 98</div>
+                <ul className="start-menu-list">
+                  <li onClick={() => alert('Windows Update')}>Windows Update</li>
+                  <li onClick={() => alert('Abrindo programas...')}>Programs</li>
+                  <li onClick={() => alert('Favoritos abertos')}>Favorites</li>
+                  <li onClick={() => alert('Abrindo documentos...')}>Documents</li>
+                  <li onClick={() => alert('Abrindo configurações')}>Settings</li>
+                  <li onClick={() => alert('Busca iniciada')}>Find</li>
+                  <li onClick={() => alert('Ajuda')}>Help</li>
+                  <li onClick={() => alert('Executando...')}>Run...</li>
+                  <li onClick={() => alert('Sessão encerrada')}>Log Off</li>
+                  <li onClick={() => alert('Desligando...')}>Shut Down...</li>
+                </ul>
+              </div>
             )}
           </div>
-        </div>
+
+          {showWindow && (
+            <div
+              ref={windowRef}
+              className="window"
+              style={{
+                width: '90%',
+                maxWidth: 600,
+                position: 'absolute',
+                top: position.y,
+                left: position.x,
+                cursor: dragging ? 'url(https://cur.cursors-4u.net/cursors/cur-2/cur116.cur), auto' : 'default',
+                zIndex: 1000
+              }}
+            >
+              <div className="title-bar" onMouseDown={handleMouseDown}>
+                <div className="title-bar-text">Deploy Schedule - Windows 98</div>
+                <div className="title-bar-controls">
+                  <button aria-label="Close" onClick={() => setShowWindow(false)}></button>
+                </div>
+              </div>
+              <div className="window-body">
+                <p>Agenda de Deploys (Segundas e Quintas):</p>
+                <div className="table-container">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Data</th>
+                        <th>Responsável</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {schedule.map(({ date, responsible }, idx) => (
+                        <tr
+                          key={idx}
+                          style={
+                            date === today
+                              ? { background: '#000080', color: 'white', fontWeight: 'bold' }
+                              : {}
+                          }
+                        >
+                          <td>{date}</td>
+                          <td>{responsible}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+              {editing ? (
+                <div style={{ marginTop: 10 }}>
+                  <p>Editar nomes:</p>
+                  {inputNames.map((name, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 5 }}>
+                      <input
+                        value={name}
+                        onChange={(e) => {
+                          const copy = [...inputNames];
+                          copy[idx] = e.target.value;
+                          setInputNames(copy);
+                        }}
+                        style={{ flex: 1 }}
+                      />
+                      <button onClick={() => removeName(idx)}>Excluir</button>
+                    </div>
+                  ))}
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                    <input
+                      placeholder="Novo nome"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      style={{ flex: 1 }}
+                    />
+                    <button onClick={addName}>Adicionar</button>
+                  </div>
+                  <button className="button" onClick={saveNames}>Salvar</button>
+                </div>
+              ) : (
+                <button className="button" onClick={() => {
+                  setInputNames(names);
+                  setEditing(true);
+                }}>Editar Nomes</button>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
